@@ -40,6 +40,8 @@ REFRESH_INTERVALS = {
     "year": 60_000,
     "custom": 30_000,
 }
+DAY_THEME_START_HOUR = 6
+NIGHT_THEME_START_HOUR = 18
 TRANSPARENT_COLOR = "#ff00ff"
 RUN_KEY = r"Software\Microsoft\Windows\CurrentVersion\Run"
 ERROR_ALREADY_EXISTS = 183
@@ -170,6 +172,7 @@ TEXT = {
         "custom_delete": "Xóa khoảng đang chọn",
         "custom_empty": "Chưa có khoảng thời gian nào",
         "sad_style": "Style buồn",
+        "theme_scheduler": "Tự đổi theme theo giờ",
         "language": "Ngôn ngữ",
         "always_on_top": "Luôn nổi trên màn hình",
         "start_with_windows": "Khởi động cùng Windows",
@@ -206,6 +209,7 @@ TEXT = {
         "custom_delete": "Delete selected interval",
         "custom_empty": "No saved intervals",
         "sad_style": "Melancholy style",
+        "theme_scheduler": "Schedule theme by time",
         "language": "Language",
         "always_on_top": "Always on top",
         "start_with_windows": "Start with Windows",
@@ -242,6 +246,7 @@ TEXT = {
         "custom_delete": "選択中の期間を削除",
         "custom_empty": "保存した期間はありません",
         "sad_style": "物悲しいスタイル",
+        "theme_scheduler": "時間帯でテーマを自動切り替え",
         "language": "言語",
         "always_on_top": "常に手前に表示",
         "start_with_windows": "Windows の起動時に開始",
@@ -302,6 +307,12 @@ def theme_quote(theme_key: str, language: str) -> str:
     if language == "vi":
         return theme.mood
     return THEME_TEXT[theme_key][language][1]
+
+
+def scheduled_theme_key(now: datetime) -> str:
+    if DAY_THEME_START_HOUR <= now.hour < NIGHT_THEME_START_HOUR:
+        return "old_sunset"
+    return "rainy_night"
 
 
 def parse_datetime_input(value: str) -> datetime:
@@ -434,6 +445,7 @@ def load_settings() -> dict[str, Any]:
         "mode": "year",
         "language": "vi",
         "theme": "rainy_night",
+        "theme_scheduler": False,
         "start_with_windows": True,
         "always_on_top": True,
         "width": WINDOW_WIDTH,
@@ -449,6 +461,9 @@ def load_settings() -> dict[str, Any]:
     settings = {**defaults, **stored}
     if settings["language"] not in TEXT:
         settings["language"] = "vi"
+    if settings["theme"] not in THEMES:
+        settings["theme"] = "rainy_night"
+    settings["theme_scheduler"] = bool(settings.get("theme_scheduler", False))
     if settings["mode"] not in ("year", "month", "day", "custom"):
         settings["mode"] = "year"
     ranges = settings.get("custom_ranges")
@@ -1018,6 +1033,9 @@ class ProgressBarApp:
         selected_theme = self.settings.get("theme", "rainy_night")
         if selected_theme not in THEMES:
             selected_theme = "rainy_night"
+        self.theme_scheduler_var = tk.BooleanVar(value=bool(self.settings["theme_scheduler"]))
+        if self.theme_scheduler_var.get():
+            selected_theme = scheduled_theme_key(datetime.now())
         self.theme_var = tk.StringVar(value=selected_theme)
         self.theme = THEMES[selected_theme]
         self.topmost_var = tk.BooleanVar(value=bool(self.settings["always_on_top"]))
@@ -1093,6 +1111,12 @@ class ProgressBarApp:
         self.menu.add_cascade(label=tr(language, "custom_ranges"), menu=self.custom_menu)
         self.menu.add_separator()
         self.theme_menu = tk.Menu(self.menu, tearoff=False)
+        self.theme_menu.add_checkbutton(
+            label=tr(language, "theme_scheduler"),
+            variable=self.theme_scheduler_var,
+            command=self.toggle_theme_scheduler,
+        )
+        self.theme_menu.add_separator()
         for value, theme in THEMES.items():
             self.theme_menu.add_radiobutton(
                 label=theme_label(value, language),
@@ -1473,9 +1497,38 @@ class ProgressBarApp:
         self.draw(force=True)
 
     def change_theme(self) -> None:
+        if self.theme_scheduler_var.get():
+            self.theme_scheduler_var.set(False)
+            self.settings["theme_scheduler"] = False
         self.settings["theme"] = self.theme_var.get()
         self.theme = THEMES[self.theme_var.get()]
         save_settings(self.settings)
+        self.build_menu()
+        self.update_surface()
+        self.draw(force=True)
+
+    def toggle_theme_scheduler(self) -> None:
+        enabled = self.theme_scheduler_var.get()
+        self.settings["theme_scheduler"] = enabled
+        if enabled:
+            self.apply_scheduled_theme()
+        else:
+            theme_key = self.settings["theme"]
+            self.theme_var.set(theme_key)
+            self.theme = THEMES[theme_key]
+        save_settings(self.settings)
+        self.build_menu()
+        self.update_surface()
+        self.draw(force=True)
+
+    def apply_scheduled_theme(self) -> None:
+        if not self.theme_scheduler_var.get():
+            return
+        theme_key = scheduled_theme_key(datetime.now())
+        if theme_key == self.theme_var.get():
+            return
+        self.theme_var.set(theme_key)
+        self.theme = THEMES[theme_key]
         self.build_menu()
         self.update_surface()
         self.draw(force=True)
@@ -1677,6 +1730,7 @@ class ProgressBarApp:
                 )
 
     def refresh(self) -> None:
+        self.apply_scheduled_theme()
         if self.is_visible:
             self.draw()
         interval = REFRESH_INTERVALS.get(self.mode_var.get(), 30_000)

@@ -1,4 +1,4 @@
-# Publishing v0.1.0
+# Publishing A Release
 
 ## GitHub Repository
 
@@ -13,10 +13,10 @@
 Install [GitHub CLI](https://cli.github.com/), run `gh auth login`, then:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File tools\publish_release.ps1
+powershell -ExecutionPolicy Bypass -File tools\publish_release.ps1 -Version v0.2.0
 ```
 
-The script publishes `dist/quiet-progress.exe` as `v0.1.0`.
+The script publishes `dist/quiet-progress.exe` with the requested version.
 
 ## Social Preview
 

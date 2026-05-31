@@ -18,6 +18,7 @@
 
 - Track the year, month, day, or multiple custom milestones.
 - Choose between five melancholy themes.
+- Schedule `Old Sunset` during the day and `Rainy Night` after dark.
 - Switch between Vietnamese, English, and Japanese.
 - Drag, resize, and keep the widget floating or at the bottom window layer.
 - Control the widget from the system tray.
