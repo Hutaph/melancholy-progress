@@ -30,8 +30,12 @@ if (-not (Test-Path -LiteralPath $notes)) {
 
 Push-Location $root
 try {
-  gh release view $Version *> $null
-  if ($LASTEXITCODE -eq 0) {
+  $releases = gh release list --limit 100 --json tagName | ConvertFrom-Json
+  if ($LASTEXITCODE -ne 0) {
+    throw 'Could not read GitHub releases.'
+  }
+  $existingRelease = $releases | Where-Object { $_.tagName -eq $Version } | Select-Object -First 1
+  if ($null -ne $existingRelease) {
     gh release upload $Version $asset --clobber
     gh release edit $Version `
       --title "quiet-progress $Version" `
