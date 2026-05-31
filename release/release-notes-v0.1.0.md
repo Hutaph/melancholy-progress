@@ -10,4 +10,4 @@ First public Windows release.
 - Vietnamese, English, and Japanese UI.
 - Resizable widget, system tray controls, and optional Windows startup.
 
-Download `quiet-progress-windows.zip`, extract it, and run `quiet-progress.exe`.
+Download and run `quiet-progress.exe`.

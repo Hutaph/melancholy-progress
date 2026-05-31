@@ -16,7 +16,7 @@ Install [GitHub CLI](https://cli.github.com/), run `gh auth login`, then:
 powershell -ExecutionPolicy Bypass -File tools\publish_release.ps1
 ```
 
-The script publishes `release/quiet-progress-windows.zip` as `v0.1.0`.
+The script publishes `dist/quiet-progress.exe` as `v0.1.0`.
 
 ## Social Preview
 

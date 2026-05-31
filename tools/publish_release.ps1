@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
-$asset = Join-Path $root 'release\quiet-progress-windows.zip'
+$asset = Join-Path $root 'dist\quiet-progress.exe'
 $notes = Join-Path $root 'release\release-notes-v0.1.0.md'
 
 if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
@@ -18,9 +18,17 @@ if (-not (Test-Path -LiteralPath $asset)) {
 
 Push-Location $root
 try {
-  gh release create v0.1.0 $asset `
-    --title 'quiet-progress v0.1.0' `
-    --notes-file $notes
+  gh release view v0.1.0 *> $null
+  if ($LASTEXITCODE -eq 0) {
+    gh release upload v0.1.0 $asset --clobber
+    gh release edit v0.1.0 `
+      --title 'quiet-progress v0.1.0' `
+      --notes-file $notes
+  } else {
+    gh release create v0.1.0 $asset `
+      --title 'quiet-progress v0.1.0' `
+      --notes-file $notes
+  }
 } finally {
   Pop-Location
 }

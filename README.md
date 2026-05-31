@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="../../releases/latest/download/quiet-progress-windows.zip">
+  <a href="../../releases/latest/download/quiet-progress.exe">
     <img src="https://img.shields.io/badge/Download-Windows-73a9bf?style=for-the-badge&logo=windows11&logoColor=white" alt="Download for Windows">
   </a>
 </p>
@@ -25,9 +25,8 @@
 
 ## Install
 
-1. Download [`quiet-progress-windows.zip`](../../releases/latest/download/quiet-progress-windows.zip).
-2. Extract the archive.
-3. Run `quiet-progress.exe`.
+1. Download [`quiet-progress.exe`](../../releases/latest/download/quiet-progress.exe).
+2. Run `quiet-progress.exe`.
 
 No Python installation is required.
 
@@ -54,7 +53,7 @@ py -3.14 -m venv .build-venv
 powershell -ExecutionPolicy Bypass -File tools\build_windows.ps1
 ```
 
-The release archive is written to `release/quiet-progress-windows.zip`.
+The executable is written to `dist/quiet-progress.exe`.
 
 ## License
 
