@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.build-venv/
+
+build/
+dist/
+*.spec
+
+release/*.zip
